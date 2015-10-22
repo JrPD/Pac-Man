@@ -14,9 +14,10 @@ namespace Pac_man.Controls
 	{
 		public event EnemyMovement EnemyMovement;
 		public event EnemyPacmanCatched EnemyPacmanCatched;
+		private Random random;
 
-		protected Pacman _pacman = null;
-		protected Timer Timer;
+		private Pacman _pacman = null;
+		private Timer Timer;
 		public bool[,] AllowedLocationsMap { get; set; }
 		public CharacterType Type { get { return CharacterType.Enemy; } set { } }
 		public EnemyType EnemyType { get; set; }
@@ -24,28 +25,54 @@ namespace Pac_man.Controls
 		public Enemy()
 		{
 			this.Height = this.Width = 20;
-			this.Location = new Point(140, 300);
 			EnemyMovement += new EnemyMovement(Enemy_Enemy_Movement);
 			EnemyPacmanCatched += Enemy_EnemyPacmanCatched;
+			random = new Random();
 		}
 
-		public Enemy(Pacman pacman, EnemyType type)
+		public Enemy(Pacman pacman, EnemyType type, Point location, Game.Level level)
 			: this()
 		{
-			EnemyType = type;
+			SetSpeed(level);
+			this.Location = location;
 			_pacman = pacman;
-			Timer = new Timer(){Interval = 150};
-			Timer.Start();
-			Timer.Tick+=_timer_Tick;
+			EnemyType = type;
+
 			AllowedLocationsMap = pacman.AllowedLocationsMap;
 		}
 
-		protected void Enemy_EnemyPacmanCatched(object sender)
+		private void SetSpeed(Game.Level level)
 		{
-			Timer.Stop();
+			Timer = new Timer();
+			switch (level)
+			{
+				case Game.Level.Low:
+				{
+					Timer.Interval = 300;
+					break;
+				}
+				case Game.Level.Middle:
+				{
+					Timer.Interval = 200;
+					break;
+				}
+				case Game.Level.Hight:
+				{
+					Timer.Interval = 100;
+					break;
+				}
+			}
+			Timer.Start();
+			Timer.Tick += _timer_Tick;
 		}
 
-		protected void _timer_Tick(object sender, EventArgs e)
+		private void Enemy_EnemyPacmanCatched(object sender)
+		{
+			Timer.Stop();
+
+		}
+
+		private void _timer_Tick(object sender, EventArgs e)
 		{
 			Timer timer = (Timer) sender;
 			timer.Start();
@@ -53,7 +80,7 @@ namespace Pac_man.Controls
 			Move(_movement);
 		}
 
-		protected void Enemy_Enemy_Movement(object sender, System.Drawing.Point location)
+		private void Enemy_Enemy_Movement(object sender, System.Drawing.Point location)
 		{
 			if (_pacman.Location == location)
 			{
@@ -77,38 +104,7 @@ namespace Pac_man.Controls
 		MovementWay _prevDir;
 
 		bool _findWall = false;
-		bool _goStraight = true;
-		public MovementWay GenerateWay()
-		{
-			var move = MoveCircle();
-			if (IsAllowed(move))
-			{
-				return move;
-			}
-			else
-			{
-				return TurnClockWise(_prevDir);
-			}
-		}
-
-		private MovementWay GoStraight()
-		{
-			if (IsAllowed(MovementWay.Right))
-			{
-				return MovementWay.Right;
-			}
-			else if (IsAllowed(MovementWay.Down))
-			{
-				return MovementWay.Down;
-				_findWall = true;
-			}
-			else if (IsAllowed(MovementWay.Left))
-			{
-				return MovementWay.Left;
-			}
-			return MovementWay.Up;
-		}
-
+		
 		public bool IsAllowed(MovementWay move)
 		{
 			bool result = true;
@@ -154,34 +150,6 @@ namespace Pac_man.Controls
 			return result;
 		}
 	
-		private MovementWay TurnClockWise(MovementWay move)
-		{
-			switch (move)
-			{
-				case MovementWay.Right:
-					{
-						_movement = MovementWay.Down;
-						break;
-					}
-				case MovementWay.Up:
-					{
-						_movement = MovementWay.Right;
-						break;
-					}
-				case MovementWay.Left:
-					{
-						_movement = MovementWay.Up;
-						break;
-					}
-				case MovementWay.Down:
-					{
-						_movement = MovementWay.Left;
-						break;
-					}
-			}
-			return _movement;
-		}
-
 		public override void Move(MovementWay way)
 		{
 			switch (EnemyType)
@@ -194,7 +162,7 @@ namespace Pac_man.Controls
 				case EnemyType.Scatter:
 				{
 					_prevDir = way;
-					way = GenerateWay();
+					way = GenerateRandomWay();
 					break;
 				}
 			}
@@ -211,7 +179,26 @@ namespace Pac_man.Controls
 				EnemyMovement(this, this.Location);
 		}
 
-		public new int TotalPoints
+		private MovementWay GenerateRandomWay()
+		{
+			Point e = EnemyLocation;
+
+			List<MovementWay> possibleDirections = GetPossibleDirections(e);
+			AvoidRevirsingDir(ref possibleDirections);
+
+			int rnd = random.Next(0, possibleDirections.Count);
+			_movement = possibleDirections[rnd];
+			if (IsAllowed(_movement))
+			{
+				return possibleDirections[rnd];
+			}
+			else
+			{
+				return GenerateRandomWay();
+			}
+		}
+
+		public int TotalPoints
 		{
 			get
 			{
@@ -222,15 +209,18 @@ namespace Pac_man.Controls
 			}
 		}
 
-		public Point GetLocation()
+		private Point EnemyLocation
 		{
-			Point loc = new Point();
-			loc.X = this.Location.X / 20;
-			loc.Y = this.Location.Y / 20 - 1;
-			return loc;
+			get
+			{
+				Point loc = new Point();
+				loc.X = this.Location.X/20;
+				loc.Y = this.Location.Y/20 - 1;
+				return loc;
+			}
 		}
 
-		public List<MovementWay> GetPossibleDirections(Point pos)
+		private List<MovementWay> GetPossibleDirections(Point pos)
 		{
 			if (pos.X>28 || pos.Y>28)
 			{
@@ -257,95 +247,9 @@ namespace Pac_man.Controls
 			return moves;
 		}
 
-		public bool[,] GetLocalGroup(Point pos)
-		{
-			bool[,] locations = new bool[3,3];
-			for (int i = 0; i < 3; i++)
-			{
-				for (int j = 0; j < 3; j++)
-				{
-					locations[i, j] = false;
-				}
-			}
-
-			if (AllowedLocationsMap[pos.X - 1, pos.Y - 1])
-			{
-				locations[0, 0] = true;
-			}
-			if (AllowedLocationsMap[pos.X , pos.Y - 1])
-			{
-				locations[0, 1] = true;
-			} 
-			if (AllowedLocationsMap[pos.X +1, pos.Y - 1])
-			{
-				locations[0, 2] = true;
-			} 
-			
-			if (AllowedLocationsMap[pos.X - 1, pos.Y])
-			{
-				locations[1, 0] = true;
-			} 
-			if (AllowedLocationsMap[pos.X , pos.Y])
-			{
-				locations[1, 1] = true;
-			} 
-			if (AllowedLocationsMap[pos.X +1, pos.Y])
-			{
-				locations[1, 2] = true;
-			} 
-			
-			if (AllowedLocationsMap[pos.X -1, pos.Y + 1])
-			{
-				locations[2, 0] = true;
-			} 
-			if (AllowedLocationsMap[pos.X , pos.Y + 1])
-			{
-				locations[2, 1] = true;
-			}
-			if (AllowedLocationsMap[pos.X + 1, pos.Y + 1])
-			{
-				locations[2, 2] = true;
-			}
-
-			for (int i = 0; i < 3; i++)
-			{
-				for (int j = 0; j < 3; j++)
-				{
-					Debug.Write(locations[i,j]);
-				}
-				Debug.WriteLine("");
-			}
-			Debug.WriteLine("");
-			return locations;
-		}
-
-		private MovementWay MoveCircle()
-		{
-			var ways = GetPossibleDirections(GetLocation());
-			var l = GetLocalGroup(GetLocation());
-
-			if (l[2, 0] || (l[0, 0] && l[1, 0]) || (l[1, 0] && l[2, 0]) || (l[0, 0] && l[0, 1] && l[0, 2]))
-			{
-				return MovementWay.Down;
-			}
-			if (l[0, 2] || (l[0, 2] && l[1, 2]) || (l[1, 2] && l[1, 2]) || (l[0, 2] && l[1, 2] && l[2, 2]))
-			{
-				return MovementWay.Up;
-			}
-			if (l[2, 2] || (l[2, 1] && l[2, 2]) || (l[2, 0] && l[2, 1]) || (l[2, 0] && l[2, 1] && l[2, 2]))
-			{
-				return MovementWay.Right;
-			}
-			if (l[0, 0] || l[0, 1]|| (l[0, 0] && l[0, 1]) || (l[0, 1] && l[0, 2]) || (l[0, 0] && l[1, 0] && l[2, 0]))
-			{
-				return MovementWay.Left;
-			}
-			return TurnClockWise(_prevDir);
-		}
-
 		private MovementWay ChasingMode()
 		{
-			Point e = GetLocation();
+			Point e = EnemyLocation;
 			
 			List<MovementWay> possibleDirections = GetPossibleDirections(e);
 			e.X = e.X * 20;
@@ -353,29 +257,15 @@ namespace Pac_man.Controls
 			
 			MovementWay way = _movement;
 
-			//Avoids ghost constantly reversing directions
-			if (_prevDir == MovementWay.Up && possibleDirections.Contains(MovementWay.Down) &&
-				possibleDirections.Contains(MovementWay.Up))
-				possibleDirections.Remove(MovementWay.Down);
-
-			if (_prevDir == MovementWay.Down && possibleDirections.Contains(MovementWay.Down) &&
-				possibleDirections.Contains(MovementWay.Up))
-				possibleDirections.Remove(MovementWay.Up);
-
-			if (_prevDir == MovementWay.Right && possibleDirections.Contains(MovementWay.Right) &&
-				possibleDirections.Contains(MovementWay.Left))
-				possibleDirections.Remove(MovementWay.Left);
-
-			if (_prevDir == MovementWay.Left && possibleDirections.Contains(MovementWay.Right) &&
-				possibleDirections.Contains(MovementWay.Left))
-				possibleDirections.Remove(MovementWay.Right);
-
+			//Avoids  reversing directions
+			AvoidRevirsingDir(ref possibleDirections);
+			
 			int shortestDistance = 1000;
 
 			int targetX = _pacman.Location.X;
 			int targetY = _pacman.Location.Y;
 
-
+			// select shortest distance
 			if (possibleDirections.Contains(MovementWay.Up) && _prevDir != MovementWay.Down)
 			{
 				int z = GetManhattanDistance(targetX, targetY, e.X, e.Y-1);
@@ -419,11 +309,159 @@ namespace Pac_man.Controls
 			return way;
 		}
 
+		private void AvoidRevirsingDir(ref List<MovementWay> possibleDirections)
+		{
+			if (_prevDir == MovementWay.Up && possibleDirections.Contains(MovementWay.Down) &&
+				possibleDirections.Contains(MovementWay.Up))
+				possibleDirections.Remove(MovementWay.Down);
+
+			if (_prevDir == MovementWay.Down && possibleDirections.Contains(MovementWay.Down) &&
+				possibleDirections.Contains(MovementWay.Up))
+				possibleDirections.Remove(MovementWay.Up);
+
+			if (_prevDir == MovementWay.Right && possibleDirections.Contains(MovementWay.Right) &&
+				possibleDirections.Contains(MovementWay.Left))
+				possibleDirections.Remove(MovementWay.Left);
+
+			if (_prevDir == MovementWay.Left && possibleDirections.Contains(MovementWay.Right) &&
+				possibleDirections.Contains(MovementWay.Left))
+				possibleDirections.Remove(MovementWay.Right);
+
+		}
+
 		private int GetManhattanDistance(int x1, int y1, int x2, int y2)
 		{
 			int d = Math.Abs(x1 - x2) + Math.Abs(y1 - y2);
 
 			return d;
 		}
+
+		//public MovementWay GenerateWay()
+		//{
+		//	var move = MoveCircle();
+		//	if (IsAllowed(move))
+		//	{
+		//		return move;
+		//	}
+		//	else
+		//	{
+		//		return TurnClockWise(_prevDir);
+		//	}
+		//}
+
+		//private MovementWay TurnClockWise(MovementWay move)
+		//{
+		//	switch (move)
+		//	{
+		//		case MovementWay.Right:
+		//			{
+		//				_movement = MovementWay.Down;
+		//				break;
+		//			}
+		//		case MovementWay.Up:
+		//			{
+		//				_movement = MovementWay.Right;
+		//				break;
+		//			}
+		//		case MovementWay.Left:
+		//			{
+		//				_movement = MovementWay.Up;
+		//				break;
+		//			}
+		//		case MovementWay.Down:
+		//			{
+		//				_movement = MovementWay.Left;
+		//				break;
+		//			}
+		//	}
+		//	return _movement;
+		//}
+
+		//public bool[,] GetLocalGroup(Point pos)
+		//{
+		//	bool[,] locations = new bool[3, 3];
+		//	for (int i = 0; i < 3; i++)
+		//	{
+		//		for (int j = 0; j < 3; j++)
+		//		{
+		//			locations[i, j] = false;
+		//		}
+		//	}
+
+		//	if (AllowedLocationsMap[pos.X - 1, pos.Y - 1])
+		//	{
+		//		locations[0, 0] = true;
+		//	}
+		//	if (AllowedLocationsMap[pos.X, pos.Y - 1])
+		//	{
+		//		locations[0, 1] = true;
+		//	}
+		//	if (AllowedLocationsMap[pos.X + 1, pos.Y - 1])
+		//	{
+		//		locations[0, 2] = true;
+		//	}
+
+		//	if (AllowedLocationsMap[pos.X - 1, pos.Y])
+		//	{
+		//		locations[1, 0] = true;
+		//	}
+		//	if (AllowedLocationsMap[pos.X, pos.Y])
+		//	{
+		//		locations[1, 1] = true;
+		//	}
+		//	if (AllowedLocationsMap[pos.X + 1, pos.Y])
+		//	{
+		//		locations[1, 2] = true;
+		//	}
+
+		//	if (AllowedLocationsMap[pos.X - 1, pos.Y + 1])
+		//	{
+		//		locations[2, 0] = true;
+		//	}
+		//	if (AllowedLocationsMap[pos.X, pos.Y + 1])
+		//	{
+		//		locations[2, 1] = true;
+		//	}
+		//	if (AllowedLocationsMap[pos.X + 1, pos.Y + 1])
+		//	{
+		//		locations[2, 2] = true;
+		//	}
+
+		//	for (int i = 0; i < 3; i++)
+		//	{
+		//		for (int j = 0; j < 3; j++)
+		//		{
+		//			Debug.Write(locations[i, j]);
+		//		}
+		//		Debug.WriteLine("");
+		//	}
+		//	Debug.WriteLine("");
+		//	return locations;
+		//}
+
+		//private MovementWay MoveCircle()
+		//{
+		//	var ways = GetPossibleDirections(EnemyLocation);
+		//	var l = GetLocalGroup(EnemyLocation);
+
+		//	if (l[2, 0] || (l[0, 0] && l[1, 0]) || (l[1, 0] && l[2, 0]) || (l[0, 0] && l[0, 1] && l[0, 2]))
+		//	{
+		//		return MovementWay.Down;
+		//	}
+		//	if (l[0, 2] || (l[0, 2] && l[1, 2]) || (l[1, 2] && l[1, 2]) || (l[0, 2] && l[1, 2] && l[2, 2]))
+		//	{
+		//		return MovementWay.Up;
+		//	}
+		//	if (l[2, 2] || (l[2, 1] && l[2, 2]) || (l[2, 0] && l[2, 1]) || (l[2, 0] && l[2, 1] && l[2, 2]))
+		//	{
+		//		return MovementWay.Right;
+		//	}
+		//	if (l[0, 0] || l[0, 1] || (l[0, 0] && l[0, 1]) || (l[0, 1] && l[0, 2]) || (l[0, 0] && l[1, 0] && l[2, 0]))
+		//	{
+		//		return MovementWay.Left;
+		//	}
+		//	return TurnClockWise(_prevDir);
+		//}
 	}
 }
+

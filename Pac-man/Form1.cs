@@ -31,6 +31,9 @@ namespace Pac_man
 			{
 				selectMapMenuItem.Items.Add(map.Name);
 			}
+			SelectLevelCb.Items.Add(Level.Low);
+			SelectLevelCb.Items.Add(Level.Middle);
+			SelectLevelCb.Items.Add(Level.Hight);
 		}
 
 		private void Form1_Load(object sender, EventArgs e)
@@ -108,12 +111,19 @@ namespace Pac_man
 				this.GroupBox.Controls.Add(dot);
 			}
 
-			//Enemy enemyLeft = new Enemy(map.Pacman, EnemyType.Chasing);
-			//GroupBox.Controls.Add(enemyLeft);
+			Level level = Level.Low;
+			if (SelectLevelCb.SelectedItem!=null)
+			{
+				Enum.TryParse(SelectLevelCb.SelectedItem.ToString(), out level);
+			}
 
-			Enemy enemyRandom = new Enemy(map.Pacman, EnemyType.Scatter);
+			Enemy enemyLeft = new Enemy(map.Pacman, EnemyType.Chasing, new Point(540, 300), level);
+			GroupBox.Controls.Add(enemyLeft);
+
+			Enemy enemyRandom = new Enemy(map.Pacman, EnemyType.Scatter, new Point(140, 300), level);
 			GroupBox.Controls.Add(enemyRandom);
-
+			Enemy enemyRandom2 = new Enemy(map.Pacman, EnemyType.Scatter, new Point(540, 500), level);
+			GroupBox.Controls.Add(enemyRandom2);
 		}
 
 		private void Game_KeyDown(object sender, KeyEventArgs e)
@@ -136,6 +146,13 @@ namespace Pac_man
 					((ICharacter)this.GroupBox.Controls[0]).Move(MovementWay.Right);
 					break;
 			}
+		}
+
+		public enum Level
+		{
+			Low,
+			Middle,
+			Hight
 		}
 	}
 }

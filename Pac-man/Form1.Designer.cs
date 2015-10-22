@@ -35,6 +35,8 @@
 			this.selectMapMenuItem = new System.Windows.Forms.ToolStripComboBox();
 			this.fToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.PointsLabel = new System.Windows.Forms.ToolStripMenuItem();
+			this.levelToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+			this.SelectLevelCb = new System.Windows.Forms.ToolStripComboBox();
 			this.menuStrip1.SuspendLayout();
 			this.SuspendLayout();
 			// 
@@ -57,8 +59,10 @@
             this.startToolStripMenuItem,
             this.exitToolStripMenuItem,
             this.selectMapMenuItem,
+            this.SelectLevelCb,
             this.fToolStripMenuItem,
-            this.PointsLabel});
+            this.PointsLabel,
+            this.levelToolStripMenuItem});
 			this.menuStrip1.Location = new System.Drawing.Point(5, 5);
 			this.menuStrip1.Name = "menuStrip1";
 			this.menuStrip1.Size = new System.Drawing.Size(600, 27);
@@ -82,8 +86,8 @@
 			// selectMapMenuItem
 			// 
 			this.selectMapMenuItem.Name = "selectMapMenuItem";
-			this.selectMapMenuItem.Size = new System.Drawing.Size(120, 23);
-			this.selectMapMenuItem.Text = "Select Map";
+			this.selectMapMenuItem.Size = new System.Drawing.Size(80, 23);
+			this.selectMapMenuItem.Text = "Map";
 			// 
 			// fToolStripMenuItem
 			// 
@@ -96,6 +100,19 @@
 			this.PointsLabel.Name = "PointsLabel";
 			this.PointsLabel.Size = new System.Drawing.Size(25, 23);
 			this.PointsLabel.Text = "1";
+			// 
+			// levelToolStripMenuItem
+			// 
+			this.levelToolStripMenuItem.AccessibleRole = System.Windows.Forms.AccessibleRole.ComboBox;
+			this.levelToolStripMenuItem.Name = "levelToolStripMenuItem";
+			this.levelToolStripMenuItem.Size = new System.Drawing.Size(46, 23);
+			this.levelToolStripMenuItem.Text = "Level";
+			// 
+			// SelectLevelCb
+			// 
+			this.SelectLevelCb.Name = "SelectLevelCb";
+			this.SelectLevelCb.Size = new System.Drawing.Size(80, 23);
+			this.SelectLevelCb.Text = "Level";
 			// 
 			// Game
 			// 
@@ -125,6 +142,8 @@
 		private System.Windows.Forms.ToolStripComboBox selectMapMenuItem;
 		private System.Windows.Forms.ToolStripMenuItem fToolStripMenuItem;
 		private System.Windows.Forms.ToolStripMenuItem PointsLabel;
+		private System.Windows.Forms.ToolStripMenuItem levelToolStripMenuItem;
+		private System.Windows.Forms.ToolStripComboBox SelectLevelCb;
 	}
 }
 

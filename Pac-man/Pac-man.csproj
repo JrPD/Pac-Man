@@ -58,9 +58,6 @@
       <DependentUpon>Block.cs</DependentUpon>
     </Compile>
     <Compile Include="Classes\DrawCharacter.cs" />
-    <Compile Include="Controls\EnemyRandom.cs">
-      <SubType>Component</SubType>
-    </Compile>
     <Compile Include="Controls\AbstractCharacter.cs">
       <SubType>Component</SubType>
     </Compile>

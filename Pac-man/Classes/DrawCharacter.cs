@@ -15,7 +15,7 @@ namespace Pac_man.Classes
 			{
 				case CharacterType.Packman:
 					e.Graphics.Clear(System.Drawing.SystemColors.Control);
-					e.Graphics.FillEllipse(System.Drawing.Brushes.DarkGreen, 0, 0, 20, 20);
+					e.Graphics.FillEllipse(System.Drawing.Brushes.Yellow, 0, 0, 20, 20);
 					e.Graphics.FillEllipse(System.Drawing.Brushes.Black, new System.Drawing.Rectangle(6, 7, 3, 3));
 					e.Graphics.FillEllipse(System.Drawing.Brushes.Black, new System.Drawing.Rectangle(12, 7, 3, 3));
 					e.Graphics.FillEllipse(System.Drawing.Brushes.Black, new System.Drawing.Rectangle(12, 7, 3, 3));

@@ -134,6 +134,8 @@ namespace Pac_man.Controls
 
 			if (PacmanMessages != null)
 				PacmanMessages(this, "Pacman has been catched by an enemy.");
+			this.Location = new Point(0, 40);
+
 		}
 
 		protected override void OnPaint(System.Windows.Forms.PaintEventArgs e)
