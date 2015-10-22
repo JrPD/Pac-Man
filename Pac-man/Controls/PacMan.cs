@@ -1,6 +1,6 @@
 ﻿using System.Linq;
 using System.Drawing;
-using Pac_man.Controls;
+using Pac_man.Classes;
 
 namespace Pac_man.Controls
 {
@@ -8,7 +8,7 @@ namespace Pac_man.Controls
 	public delegate void PacmanPointsChanged(object sender, int totalPoints);
 	public delegate void PacmanMessages(object sender, string messages);
 
-	public sealed class Pacman : Character
+	public sealed class Pacman : Character, ICharacter
 	{
 		public event PacmanMovement PacmanMovement;
 		public event PacmanPointsChanged PacmanPointsChanged;
@@ -20,6 +20,9 @@ namespace Pac_man.Controls
 
 		private bool _catched = false;
 
+		public bool[,] AllowedLocationsMap { get; set; }
+
+		MovementWay _movement = MovementWay.Right;
 
 		public Point Exit;
 
@@ -33,7 +36,6 @@ namespace Pac_man.Controls
 			this.PacmanMovement += Pacman_Pacman_Movement;
 			Exit = new Point();
 		}
-		public override bool[,] AllowedLocationsMap { get; set; }
 
 		public Pacman(Dots[] dots, bool[,] allowedMapPlaces)
 			: this()
@@ -74,6 +76,51 @@ namespace Pac_man.Controls
 			}
 		}
 		
+		private bool IsAllowed(MovementWay move)
+		{
+			bool result = true;
+
+			Point loc = new Point();
+			loc.X = this.Location.X / 20;
+			loc.Y = this.Location.Y / 20 - 1;
+
+			switch (move)
+			{
+				case MovementWay.Right:
+					{
+						loc.X += 1;
+						break;
+					}
+				case MovementWay.Left:
+					{
+						loc.X -= 1;
+						break;
+					}
+
+				case MovementWay.Up:
+					{
+						loc.Y -= 1;
+						break;
+					}
+				case MovementWay.Down:
+					{
+						loc.Y += 1;
+						break;
+					}
+			}
+			if (loc.X >= 29 || loc.X < 0 || loc.Y >= 29 || loc.Y < 0)
+			{
+				return false;
+			}
+
+			if (this.AllowedLocationsMap[loc.X, loc.Y])
+			{
+				result = false;
+			}
+
+			return result;
+		}
+	
 		public void Catched(Enemy sender)
 		{
 			Graphics g = this.CreateGraphics();
@@ -91,11 +138,11 @@ namespace Pac_man.Controls
 
 		protected override void OnPaint(System.Windows.Forms.PaintEventArgs e)
 		{
-			DrawCharacter.Draw(ref e, Type, _movement);
+			DrawCharacter.Draw(ref e, Type);
 			base.OnPaint(e);
 		}
 
-		public new CharacterType Type { get { return CharacterType.Packman; }set{}}
+		public CharacterType Type { get { return CharacterType.Packman; }set{}}
 
 		public override void Move(MovementWay way)
 		{
@@ -123,7 +170,7 @@ namespace Pac_man.Controls
 		}
 
 	    int _totalPoints = 0;
-		public new int TotalPoints
+		public int TotalPoints
 		{
 			get
 			{

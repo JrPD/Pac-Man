@@ -3,8 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Pac_man.Controls;
 
-namespace Pac_man.Controls
+namespace Pac_man.Classes
 {
 	public sealed class DrawCharacter
 	{
@@ -22,6 +23,7 @@ namespace Pac_man.Controls
 					break;
 
 				case CharacterType.Enemy:
+					e.Graphics.Clear(System.Drawing.SystemColors.Control);
 					e.Graphics.FillEllipse(System.Drawing.Brushes.Blue, new System.Drawing.Rectangle(0, 0, 20, 25));
 					e.Graphics.FillEllipse(System.Drawing.Brushes.LightYellow, new System.Drawing.Rectangle(4, 8, 3, 3));
 					e.Graphics.FillEllipse(System.Drawing.Brushes.LightYellow, new System.Drawing.Rectangle(13, 8, 3, 3));

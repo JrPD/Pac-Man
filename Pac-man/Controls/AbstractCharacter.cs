@@ -12,7 +12,8 @@ namespace Pac_man.Controls
 		Packman,
 		Enemy
 	}
-	enum EnemyType
+
+	public enum EnemyType
 	{
 		Right,
 		Left,
@@ -36,11 +37,8 @@ namespace Pac_man.Controls
 		void Move(MovementWay way);
 	}
 
-	public abstract class Character : System.Windows.Forms.Control, ICharacter
+	public abstract class Character : System.Windows.Forms.Control
 	{
-		protected MovementWay _movement = MovementWay.Right;
-
-		public abstract bool[,] AllowedLocationsMap { get; set; }
 
 		int _mSpeed = 20;
 		public virtual int Speed
@@ -54,55 +52,6 @@ namespace Pac_man.Controls
 				_mSpeed = value;
 			}
 		}
-
-		protected bool IsAllowed(MovementWay move)
-		{
-			bool result = true;
-
-			Point loc = new Point();
-			loc.X = this.Location.X / 20;
-			loc.Y = this.Location.Y / 20 - 1;
-
-			switch (move)
-			{
-				case MovementWay.Right:
-					{
-						loc.X += 1;
-						break;
-					}
-				case MovementWay.Left:
-					{
-						loc.X -= 1;
-						break;
-					}
-
-				case MovementWay.Up:
-					{
-						loc.Y -= 1;
-						break;
-					}
-				case MovementWay.Down:
-					{
-						loc.Y += 1;
-						break;
-					}
-			}
-			if (loc.X >= 29 || loc.X<0 || loc.Y >= 29 || loc.Y<0)
-			{
-				return false;
-			}
-
-			if (AllowedLocationsMap[loc.X, loc.Y])
-			{
-				result = false;
-			}
-
-			return result;
-		}
-	
-		public virtual CharacterType Type { get; set; }
-
-		public virtual int TotalPoints { get; set; }
 
 		public new virtual void Move(MovementWay way)
 		{

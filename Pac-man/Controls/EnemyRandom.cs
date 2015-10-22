@@ -13,11 +13,11 @@ namespace Pac_man.Controls
 
 		private Random random;
 
-		public EnemyRandom(Pacman pacman)
+		public EnemyRandom(Pacman pacman):base(pacman, EnemyType.Scatter)
 		{
-			_pacman = pacman;
-			this.Location = new Point(220, 280);
-			Timer = new Timer() { Interval = 150 };
+			//_pacman = pacman;
+			this.Location = new Point(40, 60);
+			Timer = new Timer() { Interval = 500 };
 			Timer.Start();
 			Timer.Tick += _timer_Tick;
 			AllowedLocationsMap = pacman.AllowedLocationsMap;
@@ -29,7 +29,7 @@ namespace Pac_man.Controls
 	
 		public override void Move(MovementWay way)
 		{
-			way = GenerateRandomWay();
+			//way = GenerateRandomWay();
 			base.Move(way);
 
 			if (_pacman != null)
@@ -42,9 +42,11 @@ namespace Pac_man.Controls
 				EnemyMovement(this, this.Location);
 		}
 
+		MovementWay _movement = MovementWay.Right;
+
 		private MovementWay GenerateRandomWay()
 		{
-			int rnd = random.Next(1, 5);
+			int rnd = random.Next(0, 4);
 			switch (rnd)
 			{
 				case 0:

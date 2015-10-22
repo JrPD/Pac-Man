@@ -32,7 +32,7 @@ namespace Pac_man.Controls
 			System.Drawing.Pen p = new System.Drawing.Pen(DotColor);
 			e.Graphics.FillEllipse(p.Brush, 0, 0, 10, 10);
 
-			base.OnPaint(e);
+			//base.OnPaint(e);
 		}
 
 		int _points = 100;

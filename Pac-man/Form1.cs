@@ -108,11 +108,11 @@ namespace Pac_man
 				this.GroupBox.Controls.Add(dot);
 			}
 
-			Enemy enemyLeft = new Enemy(map.Pacman);
-			GroupBox.Controls.Add(enemyLeft);
+			//Enemy enemyLeft = new Enemy(map.Pacman, EnemyType.Chasing);
+			//GroupBox.Controls.Add(enemyLeft);
 
-			//Enemy enemyRandom = new EnemyRandom(map.Pacman);
-			//GroupBox.Controls.Add(enemyRandom);
+			Enemy enemyRandom = new Enemy(map.Pacman, EnemyType.Scatter);
+			GroupBox.Controls.Add(enemyRandom);
 
 		}
 
