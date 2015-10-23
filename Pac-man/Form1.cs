@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
+using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
 using System.Text;
@@ -23,6 +24,8 @@ namespace Pac_man
 
 		private void InitGame()
 		{
+			Application.ThreadException += new
+			   System.Threading.ThreadExceptionEventHandler(Application_ThreadException);
 			// load maps into list
 			MapsList.LoadMaps();
 
@@ -34,6 +37,11 @@ namespace Pac_man
 			SelectLevelCb.Items.Add(Level.Low);
 			SelectLevelCb.Items.Add(Level.Middle);
 			SelectLevelCb.Items.Add(Level.Hight);
+		}
+
+		static void Application_ThreadException(object sender, System.Threading.ThreadExceptionEventArgs e)
+		{
+			Debug.WriteLine("error in");
 		}
 
 		private void Form1_Load(object sender, EventArgs e)
@@ -99,7 +107,22 @@ namespace Pac_man
 			CurrentMap.SetPackMan();
 			this.GroupBox.Controls.Add(map.Pacman);
 
-			this.GroupBox.Controls.Add(new Block(20, 20, map.Entrance) { BackColor = Color.Black });
+			Level level = Level.Low;
+			if (SelectLevelCb.SelectedItem != null)
+			{
+				Enum.TryParse(SelectLevelCb.SelectedItem.ToString(), out level);
+			}
+			Enemy enemyAI1 = new Enemy(map.Pacman, EnemyType.Chasing, new Point(540, 300), level);
+			GroupBox.Controls.Add(enemyAI1);
+			Enemy enemyAI2 = new Enemy(map.Pacman, EnemyType.Chasing, new Point(140, 300), level);
+			GroupBox.Controls.Add(enemyAI2);
+
+			Enemy enemyRandom = new Enemy(map.Pacman, EnemyType.Scatter, new Point(140, 300), level);
+			GroupBox.Controls.Add(enemyRandom);
+			Enemy enemyRandom2 = new Enemy(map.Pacman, EnemyType.Scatter, new Point(540, 500), level);
+			GroupBox.Controls.Add(enemyRandom2);
+
+			this.GroupBox.Controls.Add(new Block(20, 20, map.Entrance) { BackColor = Color.DarkGray });
 			this.GroupBox.Controls.Add(new Block(20, 20, map.Exit) { BackColor = Color.Green });
 
 			foreach (var block in map.Blocks)
@@ -110,20 +133,6 @@ namespace Pac_man
 			{
 				this.GroupBox.Controls.Add(dot);
 			}
-
-			Level level = Level.Low;
-			if (SelectLevelCb.SelectedItem!=null)
-			{
-				Enum.TryParse(SelectLevelCb.SelectedItem.ToString(), out level);
-			}
-
-			Enemy enemyLeft = new Enemy(map.Pacman, EnemyType.Chasing, new Point(540, 300), level);
-			GroupBox.Controls.Add(enemyLeft);
-
-			Enemy enemyRandom = new Enemy(map.Pacman, EnemyType.Scatter, new Point(140, 300), level);
-			GroupBox.Controls.Add(enemyRandom);
-			Enemy enemyRandom2 = new Enemy(map.Pacman, EnemyType.Scatter, new Point(540, 500), level);
-			GroupBox.Controls.Add(enemyRandom2);
 		}
 
 		private void Game_KeyDown(object sender, KeyEventArgs e)

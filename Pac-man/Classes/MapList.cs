@@ -9,14 +9,8 @@ using Pac_man.Controls;
 
 namespace Pac_man
 {
-	public class MapsList
+	public static class MapsList
 	{
-		static MapsList()
-		{
-			_maps.Add(new Map(){Blocks = Blocks(), Dots = Dots(), Name = "Default"});
-			_maps[0].SetPackMan();
-		}
-
 		private static List<Map> _maps = new List<Map>();
 
 		public static void Add(Map map)
@@ -287,6 +281,9 @@ namespace Pac_man
 		public static void LoadMaps()
 		{
 			_maps.Clear();
+			_maps.Add(new Map() { Blocks = Blocks(), Dots = Dots(), Name = "Default" });
+			_maps[0].SetPackMan();
+
 			string pathToMap = ConfigurationSettings.AppSettings["PathToMaps"];
 			DirectoryInfo di = new DirectoryInfo(System.IO.Directory.GetCurrentDirectory());
 			string fullPath = di.FullName + "\\" + pathToMap;
@@ -302,12 +299,15 @@ namespace Pac_man
 			{
 				return ;
 			}
+			// if files exists - clear maps file. no needed default map
+			_maps.Clear();
 
 			foreach (var file in files)
 			{
 				// add new map to map list
 				_maps.Add(AddNewMap(file)); 
 			}
+		
 		}
 
 		private static Map AddNewMap(string file)

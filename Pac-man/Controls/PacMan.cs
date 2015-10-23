@@ -16,15 +16,30 @@ namespace Pac_man.Controls
 		
 		#region Fields, Props
 
-		private readonly Dots[] _dots = null;
-
-		private bool _catched = false;
+		public bool IsCatched = false;
 
 		public bool[,] AllowedLocationsMap { get; set; }
 
 		MovementWay _movement = MovementWay.Right;
 
 		public Point Exit;
+
+		public Point Entrance
+		{
+			get
+			{
+				return _enter;
+			}
+			set
+			{
+				this.Location = value;
+				_enter = value;
+			}
+		}
+
+		private readonly Dots[] _dots = null;
+
+		private Point _enter;
 
 		#endregion 
 
@@ -41,6 +56,7 @@ namespace Pac_man.Controls
 			: this()
 		{
 			_dots = dots;
+			// get map(block or not)
 			AllowedLocationsMap = allowedMapPlaces;
 		}
 		#endregion
@@ -75,7 +91,11 @@ namespace Pac_man.Controls
 				}
 			}
 		}
-		
+		/// <summary>
+		/// Is place blocked or not blocked
+		/// </summary>
+		/// <param name="move"></param>
+		/// <returns></returns>
 		private bool IsAllowed(MovementWay move)
 		{
 			bool result = true;
@@ -121,8 +141,16 @@ namespace Pac_man.Controls
 			return result;
 		}
 	
+		/// <summary>
+		/// when packmen is catched by enemy
+		/// </summary>
+		/// <param name="sender"></param>
 		public void Catched(Enemy sender)
 		{
+			if (IsCatched)
+			{
+				return;
+			}
 			Graphics g = this.CreateGraphics();
 
 			g.FillEllipse(System.Drawing.Brushes.Red, 0, 0, Width, Height);
@@ -130,7 +158,7 @@ namespace Pac_man.Controls
 			g.FillEllipse(System.Drawing.Brushes.Transparent, 35, 20, 10, 5);
 
 
-			_catched = true;
+			IsCatched = true;
 
 			if (PacmanMessages != null)
 				PacmanMessages(this, "Pacman has been catched by an enemy.");
@@ -148,7 +176,7 @@ namespace Pac_man.Controls
 
 		public override void Move(MovementWay way)
 		{
-			if (_catched)
+			if (IsCatched)
 				return;
 
 			_movement = way;

@@ -12,22 +12,37 @@ namespace Pac_man.Controls
 
 	public  class Enemy :Character, ICharacter
 	{
+		#region Events
 		public event EnemyMovement EnemyMovement;
 		public event EnemyPacmanCatched EnemyPacmanCatched;
-		private Random random;
+		#endregion
 
-		private Pacman _pacman = null;
-		private Timer Timer;
+		#region Fields, Prop`s
+
+		private  Random _random;
+
+		private readonly Pacman _pacman;
+
+		private Timer _timer;
+
 		public bool[,] AllowedLocationsMap { get; set; }
-		public CharacterType Type { get { return CharacterType.Enemy; } set { } }
+
+		public CharacterType Type { get { return CharacterType.Enemy; } }
+
 		public EnemyType EnemyType { get; set; }
 
+		MovementWay _movement = MovementWay.Right;
+
+		MovementWay _prevDir = MovementWay.Right;
+		#endregion
+	
+		#region Ctor
 		public Enemy()
 		{
 			this.Height = this.Width = 20;
-			EnemyMovement += new EnemyMovement(Enemy_Enemy_Movement);
+			EnemyMovement += Enemy_Enemy_Movement;
 			EnemyPacmanCatched += Enemy_EnemyPacmanCatched;
-			random = new Random();
+			_random = new Random();
 		}
 
 		public Enemy(Pacman pacman, EnemyType type, Point location, Game.Level level)
@@ -41,34 +56,40 @@ namespace Pac_man.Controls
 			AllowedLocationsMap = pacman.AllowedLocationsMap;
 		}
 
+		#endregion
+		
+		/// <summary>
+		/// set game level
+		/// </summary>
+		/// <param name="level"></param>
 		private void SetSpeed(Game.Level level)
 		{
-			Timer = new Timer();
+			_timer = new Timer();
 			switch (level)
 			{
 				case Game.Level.Low:
 				{
-					Timer.Interval = 300;
+					_timer.Interval = 300;
 					break;
 				}
 				case Game.Level.Middle:
 				{
-					Timer.Interval = 200;
+					_timer.Interval = 200;
 					break;
 				}
 				case Game.Level.Hight:
 				{
-					Timer.Interval = 100;
+					_timer.Interval = 100;
 					break;
 				}
 			}
-			Timer.Start();
-			Timer.Tick += _timer_Tick;
+			_timer.Start();
+			_timer.Tick += _timer_Tick;
 		}
 
 		private void Enemy_EnemyPacmanCatched(object sender)
 		{
-			Timer.Stop();
+			_timer.Stop();
 
 		}
 
@@ -82,12 +103,16 @@ namespace Pac_man.Controls
 
 		private void Enemy_Enemy_Movement(object sender, System.Drawing.Point location)
 		{
-			if (_pacman.Location == location)
-			{
+			Debug.WriteLine( this.Location.ToString());
+			if (_pacman.Location == this.Location)
+				{
 				if (EnemyPacmanCatched != null)
 				{
+					if (!_pacman.IsCatched)
+					{
 					EnemyPacmanCatched(this);
-					Timer.Enabled = false;
+					_timer.Enabled = false;
+					}
 				}
 				_pacman.Catched(this);
 			}
@@ -96,15 +121,10 @@ namespace Pac_man.Controls
 		protected override void OnPaint(System.Windows.Forms.PaintEventArgs e)
 		{
 			DrawCharacter.Draw(ref e, Type);
-
 			base.OnPaint(e);
 		}
 
-		MovementWay _movement = MovementWay.Right;
-		MovementWay _prevDir;
-
-		bool _findWall = false;
-		
+		// is place allowed or not
 		public bool IsAllowed(MovementWay move)
 		{
 			bool result = true;
@@ -152,6 +172,7 @@ namespace Pac_man.Controls
 	
 		public override void Move(MovementWay way)
 		{
+			// swich ememy type. Chase or random way
 			switch (EnemyType)
 			{
 				case EnemyType.Chasing:
@@ -161,7 +182,6 @@ namespace Pac_man.Controls
 				}
 				case EnemyType.Scatter:
 				{
-					_prevDir = way;
 					way = GenerateRandomWay();
 					break;
 				}
@@ -171,7 +191,8 @@ namespace Pac_man.Controls
 
 			if (_pacman != null)
 			{
-				if (EnemyMovement != null) EnemyMovement(this, this.Location);
+				if (EnemyMovement != null) 
+					EnemyMovement(this, this.Location);
 				return;
 			}
 
@@ -182,11 +203,11 @@ namespace Pac_man.Controls
 		private MovementWay GenerateRandomWay()
 		{
 			Point e = EnemyLocation;
-
+		
 			List<MovementWay> possibleDirections = GetPossibleDirections(e);
 			AvoidRevirsingDir(ref possibleDirections);
 
-			int rnd = random.Next(0, possibleDirections.Count);
+			int rnd = _random.Next(0, possibleDirections.Count);
 			_movement = possibleDirections[rnd];
 			if (IsAllowed(_movement))
 			{
@@ -214,19 +235,33 @@ namespace Pac_man.Controls
 			get
 			{
 				Point loc = new Point();
-				loc.X = this.Location.X/20;
-				loc.Y = this.Location.Y/20 - 1;
+				if (this.Location.X!=0)
+				{
+					loc.X = this.Location.X / 20;
+					
+				}
+				if (this.Location.Y!=0)
+				{
+					loc.Y = this.Location.Y / 20 - 1;
+				}
 				return loc;
 			}
 		}
 
 		private List<MovementWay> GetPossibleDirections(Point pos)
 		{
-			if (pos.X>28 || pos.Y>28)
-			{
-				return null;
-			}
 			List<MovementWay> moves = new List<MovementWay>();
+
+			if ( pos.Y>27)
+			{
+				 moves.Add(MovementWay.Up);
+				 return moves;
+			}
+			if (pos.X > 27)
+			{
+				moves.Add(MovementWay.Left);
+				return moves;
+			}
 			if (!AllowedLocationsMap[pos.X, pos.Y-1])
 			{
 				moves.Add(MovementWay.Up);	
