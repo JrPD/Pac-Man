@@ -16,6 +16,8 @@ namespace Pac_man.Controls
 		
 		#region Fields, Props
 
+		const byte Step = MapsList.Step;
+
 		public bool IsCatched = false;
 
 		public bool[,] AllowedLocationsMap { get; set; }
@@ -37,7 +39,7 @@ namespace Pac_man.Controls
 			}
 		}
 
-		private readonly Dots[] _dots = null;
+		public readonly Dots[] _dots;
 
 		private Point _enter;
 
@@ -47,9 +49,10 @@ namespace Pac_man.Controls
 
 		public Pacman()
 		{
-			this.Width = this.Height = 20;
+			this.Width = this.Height = Step;
 			this.PacmanMovement += Pacman_Pacman_Movement;
 			Exit = new Point();
+			TotalPoints = 0;
 		}
 
 		public Pacman(Dots[] dots, bool[,] allowedMapPlaces)
@@ -83,11 +86,12 @@ namespace Pac_man.Controls
 			if ((_dots.Count(d => d != null) < 1))
 			{
 				// if all points collected - unblock exit;
-				AllowedLocationsMap[Exit.X/20, Exit.Y/20-1] = false;
+				AllowedLocationsMap[Exit.X / Step, Exit.Y / Step - 1] = false;
 				if (this.Location == new Point(Exit.X, Exit.Y))
 				{
 					if (PacmanMessages != null)
-						PacmanMessages(this, "You win !!");
+						PacmanMessages(this, string.Format("WIN!!! Total Points: {0}",TotalPoints));
+					TotalPoints = 0;
 				}
 			}
 		}
@@ -101,8 +105,8 @@ namespace Pac_man.Controls
 			bool result = true;
 
 			Point loc = new Point();
-			loc.X = this.Location.X / 20;
-			loc.Y = this.Location.Y / 20 - 1;
+			loc.X = this.Location.X / Step;
+			loc.Y = this.Location.Y / Step - 1;
 
 			switch (move)
 			{
@@ -157,13 +161,11 @@ namespace Pac_man.Controls
 			g.FillEllipse(System.Drawing.Brushes.Black, 20, 10, 5, 5);
 			g.FillEllipse(System.Drawing.Brushes.Transparent, 35, 20, 10, 5);
 
-
 			IsCatched = true;
 
 			if (PacmanMessages != null)
 				PacmanMessages(this, "Pacman has been catched by an enemy.");
-			this.Location = new Point(0, 40);
-
+			TotalPoints = 0;
 		}
 
 		protected override void OnPaint(System.Windows.Forms.PaintEventArgs e)

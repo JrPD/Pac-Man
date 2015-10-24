@@ -16,9 +16,11 @@ namespace Pac_man.Controls
 
 	public class Dots : System.Windows.Forms.Control, IDots
 	{
+		const byte Step = MapsList.Step;
+
 		public Dots()
 		{
-			this.Width = this.Height = 20;
+			this.Width = this.Height = Step;
 		}
 
 		public Dots(int point)
@@ -62,7 +64,7 @@ namespace Pac_man.Controls
 
 		public static Point Loc(int x, int y)
 		{
-			return new Point(20*x, 20*y+20);
+			return new Point(Step * x, Step * y + Step);
 		}
 
 	}

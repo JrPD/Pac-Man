@@ -1,16 +1,17 @@
-﻿using System;
+﻿using Pac_man.Controls;
+using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Drawing;
 using System.IO;
 using System.Linq;
-using Pac_man.Controls;
-using Pac_man.Controls;
 
 namespace Pac_man
 {
 	public static class MapsList
 	{
+		public const byte Step = 20;
+
 		private static List<Map> _maps = new List<Map>();
 
 		public static void Add(Map map)
@@ -281,6 +282,7 @@ namespace Pac_man
 		public static void LoadMaps()
 		{
 			_maps.Clear();
+			// add default map to map list
 			_maps.Add(new Map() { Blocks = Blocks(), Dots = Dots(), Name = "Default" });
 			_maps[0].SetPackMan();
 
@@ -297,7 +299,7 @@ namespace Pac_man
 
 			if (!files.Any())
 			{
-				return ;
+				return;
 			}
 			// if files exists - clear maps file. no needed default map
 			_maps.Clear();
@@ -305,14 +307,14 @@ namespace Pac_man
 			foreach (var file in files)
 			{
 				// add new map to map list
-				_maps.Add(AddNewMap(file)); 
+				_maps.Add(AddNewMap(file));
 			}
-		
+
 		}
 
 		private static Map AddNewMap(string file)
 		{
-			Map map = new Map {Name = file.Split('\\').Last()};
+			Map map = new Map { Name = file.Split('\\').Last() };
 
 			try
 			{
@@ -326,17 +328,17 @@ namespace Pac_man
 					bool isBlocks = true;
 					var In = reader.ReadLine();
 					var Out = reader.ReadLine();
-					if (!string.IsNullOrWhiteSpace(In)  && !string.IsNullOrWhiteSpace(Out) 
-						&& In.Contains("#") &&  Out.Contains("#"))
+					if (!string.IsNullOrWhiteSpace(In) && !string.IsNullOrWhiteSpace(Out)
+						&& In.Contains("#") && Out.Contains("#"))
 					{
 						In = In.Replace('#', ' ');
 						Out = Out.Replace('#', ' ');
 						string[] inp = In.Split(',');
 						string[] outp = Out.Split(',');
-						map.Entrance.X = Convert.ToInt32(inp[0]) *20;
-						map.Entrance.Y = Convert.ToInt32(inp[1]) * 20;
-						map.Exit.X = Convert.ToInt32(outp[0]) * 20;
-						map.Exit.Y = Convert.ToInt32(outp[1]) * 20;
+						map.Entrance.X = Convert.ToInt32(inp[0]) * Step;
+						map.Entrance.Y = Convert.ToInt32(inp[1]) * Step;
+						map.Exit.X = Convert.ToInt32(outp[0]) * Step;
+						map.Exit.Y = Convert.ToInt32(outp[1]) * Step;
 					}
 
 					while ((line = reader.ReadLine()) != null)
@@ -349,8 +351,8 @@ namespace Pac_man
 
 						if (isBlocks)
 						{
-							
-							AddNewBlock(line, map,ref positionBlock);
+
+							AddNewBlock(line, map, ref positionBlock);
 						}
 						else
 						{
@@ -377,9 +379,9 @@ namespace Pac_man
 				int height = Convert.ToInt32(dots[1]);
 				int x = Convert.ToInt32(dots[2]);
 				int y = Convert.ToInt32(dots[3]);
-				if (pos<4)
+				if (pos < 4)
 				{
-					map.Blocks[pos] = (new Block(width, height, new Point(x,y)));
+					map.Blocks[pos] = (new Block(width, height, new Point(x, y)));
 				}
 				map.Blocks[pos] = (Block.SetBlockProp(width, height, x, y));
 				pos++;
@@ -393,7 +395,7 @@ namespace Pac_man
 			{
 				int x = Convert.ToInt32(dots[0]);
 				int y = Convert.ToInt32(dots[1]);
-				map.Dots[pos]=(new Dots() { Location = Controls.Dots.Loc(x, y) });
+				map.Dots[pos] = (new Dots() { Location = Controls.Dots.Loc(x, y) });
 				pos++;
 			}
 		}

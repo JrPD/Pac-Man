@@ -7,40 +7,10 @@ using System.Threading.Tasks;
 
 namespace Pac_man.Controls
 {
-	public enum CharacterType
-	{
-		Packman,
-		Enemy
-	}
-
-	public enum EnemyType
-	{
-		Right,
-		Left,
-		Scatter,
-		Chasing
-	}
-
-	public enum MovementWay
-	{
-		Up,
-		Down,
-		Left,
-		Right
-	}
-
-	public interface ICharacter : IDisposable
-	{
-		int TotalPoints { get; set; }
-		int Speed { get; set; }
-		CharacterType Type { get; }
-		void Move(MovementWay way);
-	}
-
 	public abstract class Character : System.Windows.Forms.Control
 	{
-
 		int _mSpeed = 20;
+
 		public virtual int Speed
 		{
 			get

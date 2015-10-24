@@ -17,6 +17,8 @@ namespace Pac_man.Controls
 
 	public partial class Block : System.Windows.Forms.Control, IBlock
 	{
+		const byte Step = MapsList.Step;
+
 		public Block()
 		{
 			this.BackColor = BlockColor;
@@ -34,8 +36,10 @@ namespace Pac_man.Controls
 		{
 			this.Location = location;
 		}
-
-		private System.Drawing.Color _mBlockColor = System.Drawing.Color.DarkRed;
+		//DarkOliveGreen
+		//ForestGreen
+		//darkred
+		private System.Drawing.Color _mBlockColor = System.Drawing.Color.DarkOliveGreen;
 
 		public System.Drawing.Color BlockColor
 		{
@@ -45,7 +49,7 @@ namespace Pac_man.Controls
 
 		public static Block SetBlockProp(int width, int height, int x, int y)
 		{
-			return new Block(width*20, height*20, new Point(x*20, y*20));
+			return new Block(width * Step, height * Step, new Point(x * Step, y * Step));
 		}
 
 	}

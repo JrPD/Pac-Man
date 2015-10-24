@@ -8,6 +8,8 @@ namespace Pac_man
 {
 	public class Map
 	{
+		readonly byte Step = MapsList.Step;
+
 		public string Name { get; set; }
 
 		public Block[] Blocks;
@@ -22,7 +24,10 @@ namespace Pac_man
 		
 		public Map()
 		{
+			// blocks count
 			Blocks =new Block[100];
+
+			// dots counts
 			Dots =  new Dots[300];
 			Entrance = new Point();
 			Exit= new Point();
@@ -33,19 +38,19 @@ namespace Pac_man
 			Pacman = new Pacman(Dots, AllowedMapPlaces());
 			Pacman.Exit = Exit;
 
-			if (Entrance == new Point(0,0))
-			{
-				Entrance = new Point(20, 40);
-			}
-			else
-			{
-				Pacman.Entrance = Entrance;
-			}
+			// if entrance is not initialize
+			if (Entrance == Point.Empty)
+				Entrance = new Point(Step, 2*Step);
+
+			Pacman.Entrance = Entrance;
 		}
+		//dimensions
+		const byte id = 29;
+		const byte jd = 29;
 
 		public bool[,] DotsLocations()
 		{
-			bool[,] places = new bool[29, 29];
+			bool[,] places = new bool[id,jd];
 
 			foreach (var dot in Dots)
 			{
@@ -57,18 +62,18 @@ namespace Pac_man
 				int y = 0;
 
 				if (dot.Location.X != 0)
-					x = dot.Location.X/20;
+					x = dot.Location.X/Step;
 
 				if (dot.Location.Y != 0)
-					y = dot.Location.Y/20 - 1;
+					y = dot.Location.Y / Step - 1;
 
 				places[x, y] = true;
 			}
 
 
-			for (int i = 0; i < 29; i++)
+			for (int i = 0; i < id; i++)
 			{
-				for (int j = 0; j < 29; j++)
+				for (int j = 0; j < jd; j++)
 				{
 					if (places[j, i])
 					{
@@ -86,7 +91,7 @@ namespace Pac_man
 
 		public  bool[,] AllowedMapPlaces()
 		{
-			bool[,] places = new bool[29,29];
+			bool[,] places = new bool[id,jd];
 
 			foreach (var block in Blocks)
 			{
@@ -100,16 +105,16 @@ namespace Pac_man
 				int height = 0;
 
 				if (block.Location.X!=0)
-					x = block.Location.X/20;
+					x = block.Location.X/Step;
 
 				if (block.Location.Y != 0)
-					y = block.Location.Y / 20-1;
+					y = block.Location.Y / Step-1;
 
 				if (block.Width!=0)
-					width = block.Width/20;
+					width = block.Width/Step;
 
 				if (block.Height!= 0)
-					height = block.Height / 20;
+					height = block.Height / Step;
 				
 				for (int i = 0; i < width; i++)
 				{
@@ -120,9 +125,9 @@ namespace Pac_man
 				}
 			}
 
-			for (int i = 0; i < 29; i++)
+			for (int i = 0; i < id; i++)
 			{
-				for (int j = 0; j < 29; j++)
+				for (int j = 0; j < jd; j++)
 				{
 					if (places[j,i])
 					{

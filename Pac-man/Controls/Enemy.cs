@@ -17,13 +17,17 @@ namespace Pac_man.Controls
 		public event EnemyPacmanCatched EnemyPacmanCatched;
 		#endregion
 
-		#region Fields, Prop`s
+		#region Fields, Properties
+
+		const byte Step = MapsList.Step;
 
 		private  Random _random;
 
 		private readonly Pacman _pacman;
 
 		private Timer _timer;
+		private Timer _timerCheck;
+
 
 		public bool[,] AllowedLocationsMap { get; set; }
 
@@ -39,7 +43,7 @@ namespace Pac_man.Controls
 		#region Ctor
 		public Enemy()
 		{
-			this.Height = this.Width = 20;
+			this.Height = this.Width = Step;
 			EnemyMovement += Enemy_Enemy_Movement;
 			EnemyPacmanCatched += Enemy_EnemyPacmanCatched;
 			_random = new Random();
@@ -52,6 +56,10 @@ namespace Pac_man.Controls
 			this.Location = location;
 			_pacman = pacman;
 			EnemyType = type;
+			_timerCheck = new Timer();
+			_timerCheck.Interval = 20;
+			_timerCheck.Tick += _timerCheck_Tick;
+			_timerCheck.Start();
 
 			AllowedLocationsMap = pacman.AllowedLocationsMap;
 		}
@@ -79,30 +87,51 @@ namespace Pac_man.Controls
 				}
 				case Game.Level.Hight:
 				{
-					_timer.Interval = 100;
+					_timer.Interval = 150;
 					break;
 				}
 			}
-			_timer.Start();
 			_timer.Tick += _timer_Tick;
+			_timer.Start();
 		}
 
 		private void Enemy_EnemyPacmanCatched(object sender)
 		{
 			_timer.Stop();
-
 		}
 
 		private void _timer_Tick(object sender, EventArgs e)
 		{
 			Timer timer = (Timer) sender;
-			timer.Start();
-
 			Move(_movement);
+			timer.Start();
 		}
+		/// <summary>
+		/// check if catched every 20 ms
+		/// </summary>
+		/// <param name="sender"></param>
+		/// <param name="e"></param>
+		private void _timerCheck_Tick(object sender, EventArgs e)
+		{
+			Timer timer = (Timer)sender;
+
+			if (_pacman != null)
+			{
+				if (EnemyMovement != null)
+					EnemyMovement(this, this.Location);
+				return;
+			}
+			timer.Start();
+		}
+
 
 		private void Enemy_Enemy_Movement(object sender, System.Drawing.Point location)
 		{
+			// angry gosts mode)))
+			//------------------------------
+			AngryGostMode(sender, location);
+			//------------------------------
+			
 			Debug.WriteLine( this.Location.ToString());
 			if (_pacman.Location == this.Location)
 				{
@@ -118,6 +147,26 @@ namespace Pac_man.Controls
 			}
 		}
 
+		private void AngryGostMode(object sender, System.Drawing.Point location)
+		{
+			for (int i = 0; i <= _pacman._dots.Length - 1; i++)
+			{
+				if (_pacman._dots[i] == null)
+					continue;
+
+				if (_pacman._dots[i].Location.X >= location.X &&
+					_pacman._dots[i].Location.X <= (location.X + (this.Width / 3)) &&
+					_pacman._dots[i].Location.Y >= location.Y &&
+					_pacman._dots[i].Location.Y <= ((this.Height / 3) + location.Y))
+				{
+					Enemy enemy = sender as Enemy;
+					if (enemy != null) enemy.TotalPoints += _pacman._dots[i].Points;
+					_pacman._dots[i].Dispose();
+					_pacman._dots[i] = null;
+				}
+			}
+		}
+
 		protected override void OnPaint(System.Windows.Forms.PaintEventArgs e)
 		{
 			DrawCharacter.Draw(ref e, Type);
@@ -130,8 +179,8 @@ namespace Pac_man.Controls
 			bool result = true;
 
 			Point loc = new Point();
-			loc.X = this.Location.X / 20;
-			loc.Y = this.Location.Y / 20 - 1;
+			loc.X = this.Location.X / Step;
+			loc.Y = this.Location.Y / Step - 1;
 
 			switch (move)
 			{
@@ -157,11 +206,17 @@ namespace Pac_man.Controls
 						break;
 					}
 			}
-			if (loc.X >= 29 || loc.X < 0 || loc.Y >= 29 || loc.Y < 0)
+
+			byte min = 0;
+			byte max = 28;
+
+			// false, if >max or <min
+			if (loc.X >= max || loc.X < min || loc.Y >= max || loc.Y < min)
 			{
 				return false;
 			}
 
+			// if blocked - return false
 			if (this.AllowedLocationsMap[loc.X, loc.Y])
 			{
 				result = false;
@@ -172,6 +227,11 @@ namespace Pac_man.Controls
 	
 		public override void Move(MovementWay way)
 		{
+			if (_pacman.IsCatched || _pacman.Location==_pacman.Exit)
+			{
+				EnemyMovement -= Enemy_Enemy_Movement;
+				return;
+			}
 			// swich ememy type. Chase or random way
 			switch (EnemyType)
 			{
@@ -182,6 +242,8 @@ namespace Pac_man.Controls
 				}
 				case EnemyType.Scatter:
 				{
+					_prevDir = way;
+
 					way = GenerateRandomWay();
 					break;
 				}
@@ -189,15 +251,10 @@ namespace Pac_man.Controls
 			
 			base.Move(way);
 
-			if (_pacman != null)
-			{
-				if (EnemyMovement != null) 
-					EnemyMovement(this, this.Location);
-				return;
-			}
+			
 
-			if (EnemyMovement != null)
-				EnemyMovement(this, this.Location);
+			//if (EnemyMovement != null)
+			//	EnemyMovement(this, this.Location);
 		}
 
 		private MovementWay GenerateRandomWay()
@@ -209,6 +266,7 @@ namespace Pac_man.Controls
 
 			int rnd = _random.Next(0, possibleDirections.Count);
 			_movement = possibleDirections[rnd];
+
 			if (IsAllowed(_movement))
 			{
 				return possibleDirections[rnd];
@@ -237,12 +295,12 @@ namespace Pac_man.Controls
 				Point loc = new Point();
 				if (this.Location.X!=0)
 				{
-					loc.X = this.Location.X / 20;
+					loc.X = this.Location.X / Step;
 					
 				}
 				if (this.Location.Y!=0)
 				{
-					loc.Y = this.Location.Y / 20 - 1;
+					loc.Y = this.Location.Y / Step - 1;
 				}
 				return loc;
 			}
@@ -287,14 +345,15 @@ namespace Pac_man.Controls
 			Point e = EnemyLocation;
 			
 			List<MovementWay> possibleDirections = GetPossibleDirections(e);
-			e.X = e.X * 20;
-			e.Y = e.Y * 20+20;
+			e.X = e.X * Step;
+			e.Y = e.Y * Step + Step;
 			
 			MovementWay way = _movement;
 
 			//Avoids  reversing directions
 			AvoidRevirsingDir(ref possibleDirections);
 			
+			// set distance as big unreal distance
 			int shortestDistance = 1000;
 
 			int targetX = _pacman.Location.X;
